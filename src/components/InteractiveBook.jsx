@@ -11,8 +11,8 @@ const InteractiveBook = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   const narrationRef = useRef(new Audio());
-  const musicRef = useRef(new Audio('/assets/audios/jungle-ambient.mp3'));
-  const pageTurnRef = useRef(new Audio('/assets/audios/page-turn.mp3'));
+  const musicRef = useRef(new Audio('/snowy-tale/assets/audios/jungle-ambient.mp3'));
+  const pageTurnRef = useRef(new Audio('/snowy-tale/assets/audios/page-turn.mp3'));
 
   const navigatePage = async (direction) => {
     if (isTransitioning) return;
@@ -51,7 +51,7 @@ const InteractiveBook = () => {
       return;
     }
     const audioIndex = pageIndex - 1;
-    const audioPath = `/assets/audios/${currentLanguage}/page-${audioIndex + 1}.mp3`;
+    const audioPath = `/snowy-tale/assets/audios/${currentLanguage}/page-${audioIndex + 1}.mp3`;
     console.log('Playing audio:', audioPath);
     
     try {
@@ -129,7 +129,7 @@ const InteractiveBook = () => {
   };
 
   useEffect(() => {
-    setTimeout(() => setIsLoading(false), 1500);
+    setTimeout(() => setIsLoading(false), 3000);
     
     return () => {
       narrationRef.current.pause();
@@ -141,7 +141,7 @@ const InteractiveBook = () => {
     <div 
       className="relative h-screen overflow-hidden"
       style={{
-        backgroundImage: `url('/assets/images/background.jpg')`,
+        backgroundImage: `url('/snowy-tale/assets/images/background.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
@@ -170,7 +170,7 @@ const InteractiveBook = () => {
         <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
           <div className="relative w-24 h-24 animate-heartbeat">
             <img 
-              src="/assets/images/heart.png" 
+              src="/snowy-tale/assets/images/heart.png" 
               alt="Loading..."
               className="w-full h-full object-contain filter drop-shadow-lg"
             />
