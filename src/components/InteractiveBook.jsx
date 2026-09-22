@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -10,7 +11,8 @@ import {
   Minimize2, 
   RotateCcw,
   Sparkles,
-  Type
+  Type,
+  Gamepad2
 } from 'lucide-react';
 import { bookContent } from '../data/bookContent';
 
@@ -23,11 +25,11 @@ const resolveAsset = (path) => {
   return `${cleanBase}${cleanPath}`;
 };
 
-const InteractiveBook = () => {
+const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
   // State management
   const [currentPage, setCurrentPage] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [currentLanguage, setCurrentLanguage] = useState(language);
   const [isNarrationEnabled, setIsNarrationEnabled] = useState(true);
   const [isMusicEnabled, setIsMusicEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +38,13 @@ const InteractiveBook = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeFlash, setActiveFlash] = useState(null); // 'left' | 'right' | null
   const [preloadedImages, setPreloadedImages] = useState(new Set());
+
+  // Sync external language prop if provided
+  useEffect(() => {
+    if (language && language !== currentLanguage) {
+      setCurrentLanguage(language);
+    }
+  }, [language, currentLanguage]);
 
   // Refs for audio and gesture tracking
   const narrationRef = useRef(null);
@@ -87,8 +96,8 @@ const InteractiveBook = () => {
   }, []);
 
   // Preload neighboring images
-  const preloadPages = useCallback((currentIndex, language = currentLanguage) => {
-    const content = bookContent[language];
+  const preloadPages = useCallback((currentIndex, lang = currentLanguage) => {
+    const content = bookContent[lang];
     if (!content) return;
 
     [-1, 0, 1].forEach(offset => {
@@ -113,17 +122,17 @@ const InteractiveBook = () => {
   }, [currentPage, currentLanguage, isLoading, preloadPages]);
 
   // Audio narration player
-  const playNarration = useCallback((pageIndex, language = currentLanguage) => {
+  const playNarration = useCallback((pageIndex, lang = currentLanguage) => {
     if (!narrationRef.current) return;
 
     // Cover or back cover doesn't have narration
-    if (pageIndex === 0 || pageIndex === bookContent[language].length - 1) {
+    if (pageIndex === 0 || pageIndex === bookContent[lang].length - 1) {
       narrationRef.current.pause();
       return;
     }
 
     const audioIndex = pageIndex - 1;
-    const audioPath = resolveAsset(`assets/audios/${language}/page-${audioIndex + 1}.mp3`);
+    const audioPath = resolveAsset(`assets/audios/${lang}/page-${audioIndex + 1}.mp3`);
 
     try {
       narrationRef.current.pause();
@@ -195,7 +204,7 @@ const InteractiveBook = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [navigatePage, isTransitioning]);
 
-  // Enhanced touch swipe handler (slope filtering to avoid intercepting vertical scrolls)
+  // Enhanced touch swipe handler
   const handleTouchStart = (e) => {
     if (e.touches.length === 1) {
       touchStartRef.current = {
@@ -212,7 +221,6 @@ const InteractiveBook = () => {
       const diffY = touchStartRef.current.y - e.changedTouches[0].clientY;
       const timeDiff = Date.now() - touchStartRef.current.time;
 
-      // Must be a clear horizontal swipe (diffX > 45px, more horizontal than vertical, within 600ms)
       if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.3 && timeDiff < 600) {
         if (diffX > 0) {
           navigatePage('next');
@@ -241,6 +249,19 @@ const InteractiveBook = () => {
     setShowNextHint(false);
     if (narrationRef.current) {
       narrationRef.current.pause();
+    }
+  };
+
+  // Open Mini-Game handler
+  const handleOpenGame = () => {
+    if (narrationRef.current) {
+      narrationRef.current.pause();
+    }
+    if (musicRef.current) {
+      musicRef.current.pause();
+    }
+    if (onOpenGame) {
+      onOpenGame();
     }
   };
 
@@ -275,6 +296,9 @@ const InteractiveBook = () => {
   const toggleLanguage = () => {
     const nextLang = currentLanguage === 'en' ? 'de' : 'en';
     setCurrentLanguage(nextLang);
+    if (onLanguageChange) {
+      onLanguageChange(nextLang);
+    }
     if (isNarrationEnabled && currentPage > 0 && currentPage < bookContent[nextLang].length - 1) {
       playNarration(currentPage, nextLang);
     }
@@ -352,19 +376,34 @@ const InteractiveBook = () => {
         <>
           {/* Top Control Bar */}
           <header className="fixed top-0 left-0 right-0 z-30 safe-top px-3 sm:px-6 py-2 sm:py-3 flex justify-between items-center bg-gradient-to-b from-black/40 via-black/20 to-transparent">
-            {/* Language Selector */}
-            <button 
-              onClick={toggleLanguage}
-              aria-label="Toggle story language"
-              className="group flex items-center gap-1.5 sm:gap-2 bg-white/85 hover:bg-white active:scale-95 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 rounded-full shadow-md hover:shadow-xl transition-all duration-200 border border-white/40"
-            >
-              <span className="text-base sm:text-lg">
-                {currentLanguage === 'en' ? '🇺🇸' : '🇩🇪'}
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-gray-800 tracking-wide">
-                {currentLanguage === 'en' ? 'English' : 'Deutsch'}
-              </span>
-            </button>
+            {/* Language Selector & Mini Game Button */}
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={toggleLanguage}
+                aria-label="Toggle story language"
+                className="group flex items-center gap-1.5 sm:gap-2 bg-white/85 hover:bg-white active:scale-95 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 rounded-full shadow-md hover:shadow-xl transition-all duration-200 border border-white/40"
+              >
+                <span className="text-base sm:text-lg">
+                  {currentLanguage === 'en' ? '🇺🇸' : '🇩🇪'}
+                </span>
+                <span className="text-xs sm:text-sm font-semibold text-gray-800 tracking-wide">
+                  {currentLanguage === 'en' ? 'English' : 'Deutsch'}
+                </span>
+              </button>
+
+              {/* Play Game Button */}
+              {onOpenGame && (
+                <button
+                  onClick={handleOpenGame}
+                  aria-label="Play Snowy's Jungle Game"
+                  className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-pink-500 hover:from-amber-300 hover:to-pink-400 text-white font-bold px-3 sm:px-4 py-2 sm:py-2.5 rounded-full shadow-md active:scale-95 transition-all text-xs sm:text-sm border border-white/40"
+                  title="Play Snowy's Jungle Adventure"
+                >
+                  <Gamepad2 size={18} />
+                  <span className="hidden sm:inline">{currentLanguage === 'en' ? 'Play Game' : 'Spiel'}</span>
+                </button>
+              )}
+            </div>
 
             {/* Quick Actions (Audio, Text Size, Fullscreen) */}
             <div className="flex items-center gap-1.5 sm:gap-3">
@@ -472,7 +511,7 @@ const InteractiveBook = () => {
                     </h2>
                   </div>
 
-                  <div className="w-full flex-1 my-4 overflow-hidden rounded-2xl shadow-md flex items-center justify-center bg-pink-50">
+                  <div className="w-full flex-1 my-3 overflow-hidden rounded-2xl shadow-md flex items-center justify-center bg-pink-50">
                     <img 
                       src={resolveAsset(currentPageData.image)} 
                       alt="Story Ending"
@@ -480,13 +519,25 @@ const InteractiveBook = () => {
                     />
                   </div>
 
-                  <button
-                    onClick={handleReadAgain}
-                    className="w-full py-3.5 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-pink-400 via-teal-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
-                  >
-                    <RotateCcw size={20} />
-                    <span>{currentLanguage === 'en' ? 'Read Again' : 'Nochmal lesen'}</span>
-                  </button>
+                  <div className="w-full flex flex-col gap-2.5">
+                    {onOpenGame && (
+                      <button
+                        onClick={handleOpenGame}
+                        className="w-full py-3.5 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-amber-400 via-pink-400 to-teal-400 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
+                      >
+                        <Gamepad2 size={22} />
+                        <span>{currentLanguage === 'en' ? "Play Snowy's Game" : "Snowys Spiel spielen"}</span>
+                      </button>
+                    )}
+
+                    <button
+                      onClick={handleReadAgain}
+                      className="w-full py-3 px-6 rounded-full text-base font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    >
+                      <RotateCcw size={18} />
+                      <span>{currentLanguage === 'en' ? 'Read Again' : 'Nochmal lesen'}</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 // Mobile Story Page (Stacked Card View)
@@ -591,13 +642,25 @@ const InteractiveBook = () => {
                       />
                     </div>
 
-                    <button
-                      onClick={handleReadAgain}
-                      className="group relative rounded-full px-10 py-3.5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-pink-400 via-teal-400 to-amber-300 animate-gradient-slow flex items-center gap-2"
-                    >
-                      <RotateCcw size={22} />
-                      <span>{currentLanguage === 'en' ? 'Read Again' : 'Nochmal von vorn'}</span>
-                    </button>
+                    <div className="flex items-center gap-4">
+                      {onOpenGame && (
+                        <button
+                          onClick={handleOpenGame}
+                          className="group relative rounded-full px-8 py-3.5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-amber-400 via-pink-400 to-teal-400 animate-gradient-slow flex items-center gap-2"
+                        >
+                          <Gamepad2 size={22} />
+                          <span>{currentLanguage === 'en' ? "Play Snowy's Game" : "Snowys Spiel spielen"}</span>
+                        </button>
+                      )}
+
+                      <button
+                        onClick={handleReadAgain}
+                        className="group relative rounded-full px-8 py-3.5 text-xl font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 border border-teal-200 flex items-center gap-2"
+                      >
+                        <RotateCcw size={22} />
+                        <span>{currentLanguage === 'en' ? 'Read Again' : 'Nochmal von vorn'}</span>
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   // Desktop Two-Page Spread
@@ -704,6 +767,12 @@ const InteractiveBook = () => {
       )}
     </div>
   );
+};
+
+InteractiveBook.propTypes = {
+  onOpenGame: PropTypes.func,
+  language: PropTypes.string,
+  onLanguageChange: PropTypes.func
 };
 
 export default InteractiveBook;
