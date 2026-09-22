@@ -8,6 +8,8 @@ export default {
     extend: {
       fontFamily: {
         'updock': ['Updock', 'cursive'],
+        'patrick-hand': ['"Patrick Hand"', 'cursive', 'sans-serif'],
+        'comic-neue': ['"Comic Neue"', 'sans-serif'],
       },
       keyframes: {
         heartbeat: {

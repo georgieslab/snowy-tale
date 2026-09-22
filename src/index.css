@@ -4,47 +4,12 @@
 
 @font-face {
     font-family: 'Updock';
-    src: url('/assets/fonts/Updock-Regular.ttf') format('truetype');
+    src: url('/snowy-tale/assets/fonts/Updock-Regular.ttf') format('truetype'),
+         url('./assets/fonts/Updock-Regular.ttf') format('truetype'),
+         url('/assets/fonts/Updock-Regular.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
-}
-
-/* Sparkle animations */
-.sparkles {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-}
-  
-.sparkle {
-    position: relative;
-    width: 10px;
-    height: 10px;
-    background-color: #fff;
-    border-radius: 50%;
-    animation: sparkle 1s infinite;
-}
-
-@keyframes sparkle {
-    0% {
-        opacity: 0;
-        transform: scale(0);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: scale(0);
-    }
-}
-
-.sparkles.animate {
-    opacity: 1;
-    transform: scale(1);
+    font-display: swap;
 }
 
 /* Gradient animations */
@@ -55,7 +20,7 @@
 }
   
 .animate-gradient-slow {
-    animation: gradient-slow 3s ease infinite;
+    animation: gradient-slow 6s ease infinite;
     background-size: 200% 200%;
 }
 
@@ -69,133 +34,108 @@
     animation: twinkle-slow 2s ease-in-out infinite;
 }
 
-/* Page turn animation */
-@keyframes pageTurn {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(-180deg); }
+/* Twinkle standard */
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.6); }
+    50% { opacity: 0.9; transform: scale(1.1); }
 }
 
-.animate-page-turn {
-    animation: pageTurn 0.5s ease-in-out forwards;
-    transform-origin: left;
-    perspective: 1000px;
-}
-
-/* Edge flash animation for keyboard navigation */
-@keyframes flash {
-    0%, 100% { opacity: 0; }
-    50% { opacity: 0.5; }
-}
-
-.animate-flash {
-    animation: flash 0.3s ease-out;
+.animate-twinkle {
+    animation: twinkle 1.5s ease-in-out infinite;
 }
 
 /* Heart beat animation for loading */
 @keyframes heartbeat {
     0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
+    50% { transform: scale(1.15); }
 }
 
 .animate-heartbeat {
-    animation: heartbeat 1s ease-in-out infinite;
+    animation: heartbeat 1.2s ease-in-out infinite;
 }
 
 /* Book opening animation */
 @keyframes bookOpen {
     from {
-        transform: rotateY(90deg);
+        transform: scale(0.96) rotateY(15deg);
         opacity: 0;
     }
     to {
-        transform: rotateY(0deg);
+        transform: scale(1) rotateY(0deg);
         opacity: 1;
     }
 }
 
 .animate-book-open {
-    animation: bookOpen 1s ease-out forwards;
+    animation: bookOpen 0.8s ease-out forwards;
 }
 
-/* Gradient background for pages */
-.bg-magical-gradient {
-    background: linear-gradient(
-        45deg,
-        rgba(64, 224, 208, 0.15),  /* Turquoise - Snowy's heart */
-        rgba(255, 228, 225, 0.15),  /* Misty Rose - Snowy's scales */
-        rgba(255, 218, 185, 0.15)   /* Peach - Snowy's stomach */
-    );
-    background-size: 200% 200%;
-    animation: gradient-slow 15s ease infinite;
+/* Edge flash animations for navigation */
+@keyframes flashLeft {
+    0% { opacity: 0; }
+    50% { opacity: 0.45; }
+    100% { opacity: 0; }
 }
 
-/* Button hover effect */
-.magical-button-hover {
-    transition: all 0.3s ease;
+@keyframes flashRight {
+    0% { opacity: 0; }
+    50% { opacity: 0.45; }
+    100% { opacity: 0; }
 }
 
-.magical-button-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(64, 224, 208, 0.2);
+.edge-flash-left {
+    animation: flashLeft 0.35s ease-out forwards;
 }
 
-/* Glowing effect for next button after narration */
-@keyframes glow {
-    0%, 100% { box-shadow: 0 0 5px rgba(64, 224, 208, 0.5); }
-    50% { box-shadow: 0 0 20px rgba(64, 224, 208, 0.8); }
+.edge-flash-right {
+    animation: flashRight 0.35s ease-out forwards;
 }
 
-.animate-glow {
-    animation: glow 2s ease-in-out infinite;
+/* Glowing effect for next button cue */
+@keyframes nextGlow {
+    0%, 100% { 
+        box-shadow: 0 0 8px rgba(244, 114, 182, 0.6), 0 0 16px rgba(64, 224, 208, 0.4);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 18px rgba(244, 114, 182, 0.9), 0 0 30px rgba(64, 224, 208, 0.7);
+        transform: scale(1.08);
+    }
 }
 
-/* Essential page turn styles */
-.page {
-  position: relative;
-  transform-origin: 0% 50%;
-  transition: z-index .01s linear 1s, transform 2s linear;
-  z-index: 5;
-  transform-style: preserve-3d;
+.animate-next-glow {
+    animation: nextGlow 1.8s ease-in-out infinite;
 }
 
-.front, .back {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transition: opacity .1s linear 1s;
-  backface-visibility: hidden;
+/* Mobile story text scrollbar */
+.story-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(244, 114, 182, 0.4) transparent;
 }
 
-.front {
-  opacity: 1;
+.story-scroll::-webkit-scrollbar {
+    width: 5px;
 }
 
-.back {
-  transform: scaleX(-1);
+.story-scroll::-webkit-scrollbar-track {
+    background: transparent;
 }
 
-/* Checkbox controls page turn */
-input:checked + .page {
-  transform: rotateY(-180deg);
+.story-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(244, 114, 182, 0.4);
+    border-radius: 9999px;
 }
 
-input:checked + .page .front {
-  opacity: 0;
+/* Safe area padding utilities for mobile phones */
+.safe-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
 }
 
-input:checked + .page .back {
-  opacity: 1;
+.safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
 
-/* Z-index handling for multiple pages */
-[id^="page"]:checked + .page {
-  z-index: var(--page-index, 5);
-}
-
-/* Book container perspective */
+/* Book container 3D perspective */
 .book-container {
-  perspective: 75vw;
+    perspective: 1400px;
 }

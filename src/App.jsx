@@ -1,4 +1,3 @@
-import React from 'react'
 import InteractiveBook from './components/InteractiveBook'
 
 function App() {
