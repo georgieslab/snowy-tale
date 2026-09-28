@@ -486,7 +486,9 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
           </header>
 
           {/* Main Book Stage */}
-          <main className="book-container absolute inset-0 flex items-center justify-center p-2 sm:p-6 md:p-8 pt-16 sm:pt-20 pb-20 sm:pb-24">
+          <main className={`book-container absolute inset-0 flex items-center justify-center p-2 sm:p-6 md:p-8 pt-16 sm:pt-20 ${
+            currentPage === 0 ? 'pb-3 sm:pb-6' : 'pb-20 sm:pb-24'
+          }`}>
             
             {/* ============================================================== */}
             {/* 1. MOBILE PORTRAIT / SMALL SCREEN VIEW (< 768px)               */}
@@ -494,28 +496,34 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
             <div className="w-full h-full max-w-md flex flex-col md:hidden justify-center items-center">
               {isCover ? (
                 // Mobile Front Cover
-                <div className="w-full h-full max-h-[82vh] bg-white rounded-3xl shadow-2xl p-4 flex flex-col items-center justify-between border-4 border-pink-200/80 animate-book-open">
-                  <div className="text-center pt-2">
-                    <h1 className="text-4xl sm:text-5xl font-updock text-teal-800 tracking-wide leading-tight">
+                <div className="w-full h-full max-h-[86vh] sm:max-h-[82vh] bg-white rounded-3xl shadow-2xl p-4 sm:p-5 flex flex-col items-center justify-between border-4 border-pink-200/80 animate-book-open min-h-0">
+                  <div className="text-center pt-1 shrink-0">
+                    <h1 className="text-3xl sm:text-5xl font-updock text-teal-800 tracking-wide leading-tight">
                       {currentPageData.text}
                     </h1>
                   </div>
 
-                  <div className="w-full flex-1 my-3 overflow-hidden rounded-2xl shadow-inner relative flex items-center justify-center bg-teal-50/50">
+                  <div className="w-full flex-1 min-h-0 my-2 sm:my-3 overflow-hidden rounded-2xl shadow-inner relative flex items-center justify-center bg-teal-50/50 p-2">
                     <img 
                       src={resolveAsset(currentPageData.image)} 
                       alt="Snowy the Tiny Dinosaur Cover"
-                      className="w-full h-full object-contain rounded-2xl"
+                      className="w-full h-full object-contain rounded-xl"
                     />
                   </div>
 
-                  <div className="w-full flex flex-col items-center gap-2">
+                  <div className="w-full flex flex-col items-center gap-2 pb-1 shrink-0">
                     <button
                       onClick={handleBookOpen}
-                      className="w-full py-3.5 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
+                      className="group relative w-full overflow-hidden py-3.5 sm:py-4 px-6 rounded-full text-xl sm:text-2xl font-bold text-white shadow-xl bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow animate-magical-pulse active:scale-95 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 border-2 border-white/60"
                     >
-                      <Sparkles size={22} className="animate-spin" style={{ animationDuration: '4s' }} />
-                      <span>{currentLanguage === 'en' ? 'Open Story' : 'Buch öffnen'}</span>
+                      {/* Shimmer light sweep */}
+                      <div className="absolute inset-0 -top-1 -bottom-1 w-1/2 bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none animate-shimmer-sweep" />
+
+                      <Sparkles size={24} className="text-amber-200 animate-spin" style={{ animationDuration: '5s' }} />
+                      <span className="relative z-10 drop-shadow-md">
+                        {currentLanguage === 'en' ? 'Open Story' : 'Buch öffnen'}
+                      </span>
+                      <Sparkles size={20} className="text-teal-100 animate-pulse" />
                     </button>
 
                     <a
@@ -636,30 +644,37 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
               <div className="bg-white rounded-2xl shadow-2xl w-full h-full relative overflow-hidden border border-amber-200/50 flex">
                 {isCover ? (
                   // Desktop Front Cover
-                  <div className="w-full h-full relative p-8 flex flex-col items-center justify-between bg-gradient-to-br from-teal-50 via-white to-pink-50">
+                  <div className="w-full h-full relative p-6 lg:p-8 flex flex-col items-center justify-between bg-gradient-to-br from-teal-50 via-white to-pink-50 min-h-0">
                     {/* Spine Effect */}
-                    <div className="absolute left-0 top-0 w-8 h-full bg-gradient-to-r from-gray-400/40 via-gray-200/20 to-transparent" />
+                    <div className="absolute left-0 top-0 w-8 h-full bg-gradient-to-r from-gray-400/40 via-gray-200/20 to-transparent pointer-events-none" />
                     
-                    <div className="text-center pt-4 z-10">
-                      <h1 className="text-5xl lg:text-6xl font-updock text-teal-900 tracking-wide drop-shadow-sm">
+                    <div className="text-center pt-2 lg:pt-3 z-10 shrink-0">
+                      <h1 className="text-4xl lg:text-6xl font-updock text-teal-900 tracking-wide drop-shadow-sm leading-tight">
                         {currentPageData.text}
                       </h1>
                     </div>
 
-                    <div className="relative w-full max-w-[400px] flex-1 my-4 flex items-center justify-center">
+                    <div className="relative w-full max-w-[360px] lg:max-w-[420px] flex-1 min-h-0 my-3 lg:my-4 flex items-center justify-center overflow-hidden">
                       <img 
                         src={resolveAsset(currentPageData.image)} 
                         alt="Snowy the Tiny Dinosaur Cover"
-                        className="max-w-full max-h-full object-contain rounded-2xl shadow-lg ring-4 ring-pink-100"
+                        className="max-w-full max-h-full object-contain rounded-2xl shadow-xl ring-4 ring-pink-100"
                       />
                     </div>
 
-                    <div className="flex flex-col items-center gap-3">
+                    <div className="flex flex-col items-center gap-2.5 pb-2 shrink-0 z-10">
                       <button
                         onClick={handleBookOpen}
-                        className="group relative rounded-full px-12 py-4 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow"
+                        className="group relative overflow-hidden rounded-full px-12 lg:px-14 py-4 text-2xl lg:text-3xl font-bold text-white shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow animate-magical-pulse flex items-center gap-3 border-2 border-white/60"
                       >
-                        <span>{currentLanguage === 'en' ? 'Begin the Story' : 'Geschichte beginnen'}</span>
+                        {/* Shimmer light sweep */}
+                        <div className="absolute inset-0 -top-1 -bottom-1 w-1/2 bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none animate-shimmer-sweep" />
+
+                        <Sparkles size={28} className="text-amber-200 animate-spin" style={{ animationDuration: '6s' }} />
+                        <span className="relative z-10 drop-shadow-md">
+                          {currentLanguage === 'en' ? 'Begin the Story' : 'Geschichte beginnen'}
+                        </span>
+                        <Sparkles size={24} className="text-teal-100 animate-pulse" />
                       </button>
 
                       <a
