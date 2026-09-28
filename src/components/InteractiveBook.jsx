@@ -12,9 +12,11 @@ import {
   RotateCcw,
   Sparkles,
   Type,
-  Gamepad2
+  Gamepad2,
+  ShoppingCart,
+  ExternalLink
 } from 'lucide-react';
-import { bookContent } from '../data/bookContent';
+import { bookContent, amazonLinks } from '../data/bookContent';
 
 // Helper to resolve asset paths reliably across dev and production base paths
 const resolveAsset = (path) => {
@@ -403,6 +405,19 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                   <span className="hidden sm:inline">{currentLanguage === 'en' ? 'Play Game' : 'Spiel'}</span>
                 </button>
               )}
+
+              {/* Order on Amazon Button */}
+              <a
+                href={amazonLinks[currentLanguage] || amazonLinks.en}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Order book on Amazon"
+                className="flex items-center gap-1.5 bg-[#FF9900] hover:bg-[#F08804] text-slate-900 font-bold px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full shadow-md active:scale-95 transition-all text-xs sm:text-sm border border-amber-300"
+                title={currentLanguage === 'en' ? 'Order the book on Amazon' : 'Buch auf Amazon bestellen'}
+              >
+                <ShoppingCart size={17} />
+                <span className="hidden sm:inline">Amazon</span>
+              </a>
             </div>
 
             {/* Quick Actions (Audio, Text Size, Fullscreen) */}
@@ -494,13 +509,25 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                     />
                   </div>
 
-                  <button
-                    onClick={handleBookOpen}
-                    className="w-full py-3.5 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
-                  >
-                    <Sparkles size={22} className="animate-spin" style={{ animationDuration: '4s' }} />
-                    <span>{currentLanguage === 'en' ? 'Open Story' : 'Buch öffnen'}</span>
-                  </button>
+                  <div className="w-full flex flex-col items-center gap-2">
+                    <button
+                      onClick={handleBookOpen}
+                      className="w-full py-3.5 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    >
+                      <Sparkles size={22} className="animate-spin" style={{ animationDuration: '4s' }} />
+                      <span>{currentLanguage === 'en' ? 'Open Story' : 'Buch öffnen'}</span>
+                    </button>
+
+                    <a
+                      href={amazonLinks[currentLanguage] || amazonLinks.en}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs sm:text-sm text-teal-800/90 font-semibold hover:text-pink-600 transition-colors flex items-center justify-center gap-1.5 py-0.5"
+                    >
+                      <ShoppingCart size={15} className="text-amber-500" />
+                      <span>{currentLanguage === 'en' ? 'Also available on Amazon' : 'Auch auf Amazon erhältlich'}</span>
+                    </a>
+                  </div>
                 </div>
               ) : isBackCover ? (
                 // Mobile Back Cover
@@ -520,21 +547,33 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                   </div>
 
                   <div className="w-full flex flex-col gap-2.5">
+                    {/* Order on Amazon Button */}
+                    <a
+                      href={amazonLinks[currentLanguage] || amazonLinks.en}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3.5 px-6 rounded-full text-lg sm:text-xl font-bold text-slate-900 shadow-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 transition-transform flex items-center justify-center gap-2 border border-amber-300"
+                    >
+                      <ShoppingCart size={22} />
+                      <span>{currentLanguage === 'en' ? 'Order Book on Amazon' : 'Auf Amazon bestellen'}</span>
+                      <ExternalLink size={16} className="text-slate-800" />
+                    </a>
+
                     {onOpenGame && (
                       <button
                         onClick={handleOpenGame}
-                        className="w-full py-3.5 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-amber-400 via-pink-400 to-teal-400 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
+                        className="w-full py-3 px-6 rounded-full text-base sm:text-lg font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
                       >
-                        <Gamepad2 size={22} />
+                        <Gamepad2 size={20} />
                         <span>{currentLanguage === 'en' ? "Play Snowy's Game" : "Snowys Spiel spielen"}</span>
                       </button>
                     )}
 
                     <button
                       onClick={handleReadAgain}
-                      className="w-full py-3 px-6 rounded-full text-base font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                      className="w-full py-2.5 px-6 rounded-full text-sm sm:text-base font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
                     >
-                      <RotateCcw size={18} />
+                      <RotateCcw size={17} />
                       <span>{currentLanguage === 'en' ? 'Read Again' : 'Nochmal lesen'}</span>
                     </button>
                   </div>
@@ -615,12 +654,24 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                       />
                     </div>
 
-                    <button
-                      onClick={handleBookOpen}
-                      className="group relative rounded-full px-12 py-4 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow"
-                    >
-                      <span>{currentLanguage === 'en' ? 'Begin the Story' : 'Geschichte beginnen'}</span>
-                    </button>
+                    <div className="flex flex-col items-center gap-3">
+                      <button
+                        onClick={handleBookOpen}
+                        className="group relative rounded-full px-12 py-4 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow"
+                      >
+                        <span>{currentLanguage === 'en' ? 'Begin the Story' : 'Geschichte beginnen'}</span>
+                      </button>
+
+                      <a
+                        href={amazonLinks[currentLanguage] || amazonLinks.en}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-semibold text-teal-900/80 hover:text-pink-600 transition-colors flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/80 hover:bg-white shadow-sm border border-amber-200"
+                      >
+                        <ShoppingCart size={15} className="text-amber-500" />
+                        <span>{currentLanguage === 'en' ? 'Get the Book on Amazon' : 'Als Buch auf Amazon bestellen'}</span>
+                      </a>
+                    </div>
                   </div>
                 ) : isBackCover ? (
                   // Desktop Back Cover
@@ -642,22 +693,34 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                       />
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap justify-center items-center gap-3 lg:gap-4">
+                      {/* Order on Amazon Button */}
+                      <a
+                        href={amazonLinks[currentLanguage] || amazonLinks.en}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative rounded-full px-7 py-3 text-lg lg:text-xl font-bold text-slate-900 shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 border border-amber-300 flex items-center gap-2"
+                      >
+                        <ShoppingCart size={21} />
+                        <span>{currentLanguage === 'en' ? 'Order on Amazon' : 'Auf Amazon bestellen'}</span>
+                        <ExternalLink size={16} className="text-slate-800 opacity-70 group-hover:opacity-100" />
+                      </a>
+
                       {onOpenGame && (
                         <button
                           onClick={handleOpenGame}
-                          className="group relative rounded-full px-8 py-3.5 text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-amber-400 via-pink-400 to-teal-400 animate-gradient-slow flex items-center gap-2"
+                          className="group relative rounded-full px-7 py-3 text-lg lg:text-xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow flex items-center gap-2"
                         >
-                          <Gamepad2 size={22} />
+                          <Gamepad2 size={21} />
                           <span>{currentLanguage === 'en' ? "Play Snowy's Game" : "Snowys Spiel spielen"}</span>
                         </button>
                       )}
 
                       <button
                         onClick={handleReadAgain}
-                        className="group relative rounded-full px-8 py-3.5 text-xl font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 border border-teal-200 flex items-center gap-2"
+                        className="group relative rounded-full px-6 py-3 text-lg lg:text-xl font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 border border-teal-200 flex items-center gap-2"
                       >
-                        <RotateCcw size={22} />
+                        <RotateCcw size={20} />
                         <span>{currentLanguage === 'en' ? 'Read Again' : 'Nochmal von vorn'}</span>
                       </button>
                     </div>

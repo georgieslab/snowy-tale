@@ -135,8 +135,13 @@ export const bookContent = {
         image: '/snowy-tale/assets/images/image-11-de.jpg',
         text: 'Der kleine Dinosaurier mit dem leuchtenden Herzen',
          isCover: true
-      },
+      }
     ]
   };
   
-  export default bookContent;
+export const amazonLinks = {
+  en: 'https://www.amazon.com/s?k=Snowy+the+Tiny+Dinosaur',
+  de: 'https://www.amazon.de/s?k=Der+kleine+Dinosaurier+mit+dem+leuchtenden+Herzen'
+};
+
+export default bookContent;
