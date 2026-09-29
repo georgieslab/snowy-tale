@@ -486,7 +486,7 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
           </header>
 
           {/* Main Book Stage */}
-          <main className="book-container absolute inset-0 flex items-center justify-center p-2 sm:p-6 md:p-8 pt-16 sm:pt-20 pb-20 sm:pb-24">
+          <main className="book-container absolute inset-0 flex items-center justify-center p-2 sm:p-6 md:p-8 pt-14 sm:pt-16 pb-14 sm:pb-16">
             
             {/* ============================================================== */}
             {/* 1. MOBILE PORTRAIT / SMALL SCREEN VIEW (< 768px)               */}
@@ -494,14 +494,14 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
             <div className="w-full h-full max-w-md flex flex-col md:hidden justify-center items-center">
               {isCover ? (
                 // Mobile Front Cover
-                <div className="w-full h-full max-h-[82vh] bg-white rounded-3xl shadow-2xl p-4 flex flex-col items-center justify-between border-4 border-pink-200/80 animate-book-open">
-                  <div className="text-center pt-2">
+                <div className="w-full h-full max-h-[78vh] bg-white rounded-3xl shadow-2xl p-4 flex flex-col items-center justify-between border-4 border-pink-200/80 animate-book-open overflow-y-auto story-scroll">
+                  <div className="text-center pt-1 shrink-0">
                     <h1 className="text-4xl sm:text-5xl font-updock text-teal-800 tracking-wide leading-tight">
                       {currentPageData.text}
                     </h1>
                   </div>
 
-                  <div className="w-full flex-1 my-3 overflow-hidden rounded-2xl shadow-inner relative flex items-center justify-center bg-teal-50/50">
+                  <div className="w-full flex-1 min-h-0 my-2 overflow-hidden rounded-2xl shadow-inner relative flex items-center justify-center bg-teal-50/50">
                     <img 
                       src={resolveAsset(currentPageData.image)} 
                       alt="Snowy the Tiny Dinosaur Cover"
@@ -509,10 +509,10 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                     />
                   </div>
 
-                  <div className="w-full flex flex-col items-center gap-2">
+                  <div className="w-full flex flex-col items-center gap-2 shrink-0 pb-1">
                     <button
                       onClick={handleBookOpen}
-                      className="w-full py-3.5 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
+                      className="w-full py-3 px-6 rounded-full text-xl font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
                     >
                       <Sparkles size={22} className="animate-spin" style={{ animationDuration: '4s' }} />
                       <span>{currentLanguage === 'en' ? 'Open Story' : 'Buch öffnen'}</span>
@@ -531,14 +531,14 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                 </div>
               ) : isBackCover ? (
                 // Mobile Back Cover
-                <div className="w-full h-full max-h-[82vh] bg-white rounded-3xl shadow-2xl p-6 flex flex-col items-center justify-between border-4 border-teal-200/80 animate-book-open">
-                  <div className="text-center pt-2">
+                <div className="w-full h-full max-h-[78vh] bg-white rounded-3xl shadow-2xl p-5 flex flex-col items-center justify-between border-4 border-teal-200/80 animate-book-open overflow-y-auto story-scroll">
+                  <div className="text-center pt-1 shrink-0">
                     <h2 className="text-4xl sm:text-5xl font-updock text-pink-600">
                       {currentLanguage === 'en' ? 'The End' : 'Ende'}
                     </h2>
                   </div>
 
-                  <div className="w-full flex-1 my-3 overflow-hidden rounded-2xl shadow-md flex items-center justify-center bg-pink-50">
+                  <div className="w-full flex-1 min-h-0 my-2 overflow-hidden rounded-2xl shadow-md flex items-center justify-center bg-pink-50">
                     <img 
                       src={resolveAsset(currentPageData.image)} 
                       alt="Story Ending"
@@ -546,13 +546,13 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                     />
                   </div>
 
-                  <div className="w-full flex flex-col gap-2.5">
+                  <div className="w-full flex flex-col gap-2 shrink-0 pb-1">
                     {/* Order on Amazon Button */}
                     <a
                       href={amazonLinks[currentLanguage] || amazonLinks.en}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-3.5 px-6 rounded-full text-lg sm:text-xl font-bold text-slate-900 shadow-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 transition-transform flex items-center justify-center gap-2 border border-amber-300"
+                      className="w-full py-3 px-6 rounded-full text-lg sm:text-xl font-bold text-slate-900 shadow-lg bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 active:scale-95 transition-transform flex items-center justify-center gap-2 border border-amber-300"
                     >
                       <ShoppingCart size={22} />
                       <span>{currentLanguage === 'en' ? 'Order Book on Amazon' : 'Auf Amazon bestellen'}</span>
@@ -562,7 +562,7 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                     {onOpenGame && (
                       <button
                         onClick={handleOpenGame}
-                        className="w-full py-3 px-6 rounded-full text-base sm:text-lg font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
+                        className="w-full py-2.5 px-6 rounded-full text-base sm:text-lg font-bold text-white shadow-lg bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow active:scale-95 transition-transform flex items-center justify-center gap-2"
                       >
                         <Gamepad2 size={20} />
                         <span>{currentLanguage === 'en' ? "Play Snowy's Game" : "Snowys Spiel spielen"}</span>
@@ -571,7 +571,7 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
 
                     <button
                       onClick={handleReadAgain}
-                      className="w-full py-2.5 px-6 rounded-full text-sm sm:text-base font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                      className="w-full py-2 px-6 rounded-full text-sm sm:text-base font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-transform flex items-center justify-center gap-2"
                     >
                       <RotateCcw size={17} />
                       <span>{currentLanguage === 'en' ? 'Read Again' : 'Nochmal lesen'}</span>
@@ -636,17 +636,17 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
               <div className="bg-white rounded-2xl shadow-2xl w-full h-full relative overflow-hidden border border-amber-200/50 flex">
                 {isCover ? (
                   // Desktop Front Cover
-                  <div className="w-full h-full relative p-8 flex flex-col items-center justify-between bg-gradient-to-br from-teal-50 via-white to-pink-50">
+                  <div className="w-full h-full relative p-6 lg:p-8 flex flex-col items-center justify-between bg-gradient-to-br from-teal-50 via-white to-pink-50">
                     {/* Spine Effect */}
                     <div className="absolute left-0 top-0 w-8 h-full bg-gradient-to-r from-gray-400/40 via-gray-200/20 to-transparent" />
                     
-                    <div className="text-center pt-4 z-10">
+                    <div className="text-center pt-2 shrink-0">
                       <h1 className="text-5xl lg:text-6xl font-updock text-teal-900 tracking-wide drop-shadow-sm">
                         {currentPageData.text}
                       </h1>
                     </div>
 
-                    <div className="relative w-full max-w-[400px] flex-1 my-4 flex items-center justify-center">
+                    <div className="relative w-full max-w-[400px] flex-1 min-h-0 my-3 flex items-center justify-center">
                       <img 
                         src={resolveAsset(currentPageData.image)} 
                         alt="Snowy the Tiny Dinosaur Cover"
@@ -654,10 +654,10 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                       />
                     </div>
 
-                    <div className="flex flex-col items-center gap-3">
+                    <div className="flex flex-col items-center gap-2.5 shrink-0">
                       <button
                         onClick={handleBookOpen}
-                        className="group relative rounded-full px-12 py-4 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow"
+                        className="group relative rounded-full px-12 py-3.5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow"
                       >
                         <span>{currentLanguage === 'en' ? 'Begin the Story' : 'Geschichte beginnen'}</span>
                       </button>
@@ -675,17 +675,17 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                   </div>
                 ) : isBackCover ? (
                   // Desktop Back Cover
-                  <div className="w-full h-full relative p-8 flex flex-col items-center justify-between bg-gradient-to-br from-pink-50 via-white to-teal-50">
+                  <div className="w-full h-full relative p-6 lg:p-8 flex flex-col items-center justify-between bg-gradient-to-br from-pink-50 via-white to-teal-50">
                     {/* Spine Effect */}
                     <div className="absolute right-0 top-0 w-8 h-full bg-gradient-to-l from-gray-400/40 via-gray-200/20 to-transparent" />
                     
-                    <div className="text-center pt-4 z-10">
+                    <div className="text-center pt-2 shrink-0">
                       <h2 className="text-5xl lg:text-6xl font-updock text-pink-600">
                         {currentLanguage === 'en' ? 'The End' : 'Das Ende'}
                       </h2>
                     </div>
 
-                    <div className="relative w-full max-w-[400px] flex-1 my-4 flex items-center justify-center">
+                    <div className="relative w-full max-w-[400px] flex-1 min-h-0 my-3 flex items-center justify-center">
                       <img 
                         src={resolveAsset(currentPageData.image)} 
                         alt="Back Cover"
@@ -693,7 +693,7 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                       />
                     </div>
 
-                    <div className="flex flex-wrap justify-center items-center gap-3 lg:gap-4">
+                    <div className="flex flex-wrap justify-center items-center gap-2.5 lg:gap-3 shrink-0">
                       {/* Order on Amazon Button */}
                       <a
                         href={amazonLinks[currentLanguage] || amazonLinks.en}
