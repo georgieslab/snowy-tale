@@ -70,15 +70,17 @@ const CONSTANTS = {
   VIRTUAL_HEIGHT: 450,
   GROUND_Y: 380,
   GRAVITY: 1200,
-  PLAYER_SPEED: 250,
-  PLAYER_JUMP_VELOCITY: -550,
-  PLAYER_DASH_SPEED: 600,
-  PLAYER_DASH_DURATION: 0.3, 
+  PLAYER_SPEED: 280,
+  PLAYER_JUMP_VELOCITY: -580,
+  PLAYER_DASH_SPEED: 650,
+  PLAYER_DASH_DURATION: 0.25, 
   PLAYER_DASH_COOLDOWN: 1.0,
   INVINCIBILITY_DURATION: 1.5,
   MAX_HEALTH: 3,
   LEVEL_LENGTH: 5000,
-  BOSS_AREA_START: 4500
+  BOSS_AREA_START: 4500,
+  COYOTE_TIME: 0.15,
+  JUMP_BUFFER: 0.15
 };
 
 // ================================================================
@@ -177,7 +179,7 @@ const generateLevel = (worldIndex) => {
   for (let px = 400; px < CONSTANTS.BOSS_AREA_START - 200; px += 300) {
     const yOffsets = [280, 200, 150];
     const y = yOffsets[Math.floor(Math.random() * yOffsets.length)];
-    const w = 100 + Math.random() * 100;
+    const w = 100 + Math.random() * 150;
     level.platforms.push({ x: px, y, w, h: 20 });
 
     const rand = Math.random();
@@ -195,7 +197,7 @@ const generateLevel = (worldIndex) => {
         x: px + w/2,
         y: y - 24,
         w: 24, h: 24,
-        vx: theme.enemyType === 'bat' || theme.enemyType === 'spirit' ? -50 : (Math.random() > 0.5 ? 50 : -50),
+        vx: theme.enemyType === 'bat' || theme.enemyType === 'spirit' ? -60 : (Math.random() > 0.5 ? 60 : -60),
         vy: 0,
         startX: px,
         range: w,
@@ -216,9 +218,9 @@ const generateLevel = (worldIndex) => {
     x: CONSTANTS.BOSS_AREA_START + 300,
     y: CONSTANTS.GROUND_Y - 80,
     w: 80, h: 80,
-    hp: 3,
-    maxHp: 3,
-    vx: -100,
+    hp: 4,
+    maxHp: 4,
+    vx: -120,
     vy: 0,
     state: 'patrol',
     timer: 0,
@@ -228,7 +230,7 @@ const generateLevel = (worldIndex) => {
   };
 
   level.goal = {
-    x: CONSTANTS.BOSS_AREA_START + 600,
+    x: CONSTANTS.BOSS_AREA_START + 700,
     y: CONSTANTS.GROUND_Y - 60,
     w: 40, h: 60,
     unlocked: false
@@ -418,7 +420,8 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
     player: null,
     level: null,
     particles: [],
-    cameraX: 0
+    cameraX: 0,
+    screenShake: 0
   });
 
   useEffect(() => {
@@ -469,8 +472,11 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
       dashTimer: 0,
       dashCooldown: 0,
       invincibleTimer: 0,
+      coyoteTimer: 0,
+      jumpBufferTimer: 0
     };
     engineRef.current.cameraX = 0;
+    engineRef.current.screenShake = 0;
     engineRef.current.particles = [];
     
     setUiState({ score: 0, health: CONSTANTS.MAX_HEALTH, stars: 0, feathers: 0, isPaused: false, soundEnabled: uiState.soundEnabled });
@@ -491,9 +497,16 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
     const intentJump = k['ArrowUp'] || k['w'] || k[' '] || tch.jump;
     const intentDash = k['Shift'] || k['z'] || tch.dash;
 
+    // Timers
     if (player.dashTimer > 0) player.dashTimer -= dt;
     if (player.dashCooldown > 0) player.dashCooldown -= dt;
     if (player.invincibleTimer > 0) player.invincibleTimer -= dt;
+    if (engine.screenShake > 0) engine.screenShake -= dt;
+
+    // Variable Jump Height (Short Hop)
+    if (!intentJump && player.vy < 0) {
+      player.vy -= player.vy * 8 * dt; // Dampen upward velocity when key is released
+    }
 
     if (player.dashTimer <= 0) {
       if (intentLeft) { player.vx = -CONSTANTS.PLAYER_SPEED; player.dir = -1; }
@@ -510,10 +523,14 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
       }
     } else {
       player.vx = player.dir * CONSTANTS.PLAYER_DASH_SPEED;
+      player.vy = 0; // Freeze gravity during dash
     }
 
-    player.vy += CONSTANTS.GRAVITY * dt;
+    if (player.dashTimer <= 0) {
+        player.vy += CONSTANTS.GRAVITY * dt;
+    }
 
+    // X Collision
     player.x += player.vx * dt;
     let groundedThisFrame = false;
     
@@ -528,6 +545,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
     
     if (player.x < 10) player.x = 10;
 
+    // Y Collision
     player.y += player.vy * dt;
     const boundsY = { left: player.x - 10, right: player.x + 10, top: player.y - 30, bottom: player.y };
     for (const p of level.platforms) {
@@ -543,6 +561,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
       }
     }
     
+    // Death pit
     if (player.y > CONSTANTS.VIRTUAL_HEIGHT + 100) {
       setUiState(prev => {
         if (prev.soundEnabled) SoundFX.playDamage();
@@ -550,41 +569,60 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
         if (newHealth <= 0) setScreen('gameOver');
         return { ...prev, health: newHealth };
       });
+      engine.screenShake = 0.3;
       player.x = Math.max(100, player.x - 300);
       player.y = 100;
       player.vy = 0;
     }
 
+    // Coyote Time Logic
     if (groundedThisFrame) {
       player.isGrounded = true;
       player.canDoubleJump = true;
+      player.coyoteTimer = CONSTANTS.COYOTE_TIME;
     } else {
       player.isGrounded = false;
+      player.coyoteTimer -= dt;
     }
 
-    if (intentJump) {
-      if (player.isGrounded && !player.jumpPressed) {
+    // Jump Buffer Logic
+    if (intentJump && !player.jumpPressed) {
+      player.jumpBufferTimer = CONSTANTS.JUMP_BUFFER;
+      player.jumpPressed = true;
+    } else if (!intentJump) {
+      player.jumpPressed = false;
+    }
+    player.jumpBufferTimer -= dt;
+
+    // Execute Jump (evaluating buffer and coyote time)
+    if (player.jumpBufferTimer > 0) {
+      if (player.coyoteTimer > 0) {
         player.vy = CONSTANTS.PLAYER_JUMP_VELOCITY;
+        player.coyoteTimer = 0;
+        player.jumpBufferTimer = 0;
         if(uiState.soundEnabled) SoundFX.playJump();
         for(let i=0;i<5;i++) particles.push({x: player.x + (Math.random()-0.5)*20, y: player.y, vx: (Math.random()-0.5)*20, vy: -Math.random()*30, life: 0.3, color: '#fff'});
-      } else if (!player.isGrounded && player.canDoubleJump && !player.jumpPressed) {
+      } else if (player.canDoubleJump) {
         player.vy = CONSTANTS.PLAYER_JUMP_VELOCITY * 0.8;
         player.canDoubleJump = false;
+        player.jumpBufferTimer = 0;
         if(uiState.soundEnabled) SoundFX.playDoubleJump();
         for(let i=0;i<8;i++) particles.push({x: player.x, y: player.y-10, vx: (Math.random()-0.5)*50, vy: (Math.random()-0.5)*50, life: 0.4, color: '#2dd4bf'});
       }
-      player.jumpPressed = true;
-    } else {
-      player.jumpPressed = false;
     }
 
+    // Camera follow
     const targetCamX = player.x - CONSTANTS.VIRTUAL_WIDTH * 0.35;
     engine.cameraX += (targetCamX - engine.cameraX) * 5 * dt;
     engine.cameraX = Math.max(0, engine.cameraX);
 
+    // Entity updates
     for (const enemy of level.enemies) {
       if (enemy.dead) continue;
       
+      // Skip updates if far off-screen
+      if (enemy.x < engine.cameraX - 200 || enemy.x > engine.cameraX + CONSTANTS.VIRTUAL_WIDTH + 200) continue;
+
       enemy.x += enemy.vx * dt;
       if (enemy.x > enemy.startX + enemy.range || enemy.x < enemy.startX) {
         enemy.vx *= -1;
@@ -606,6 +644,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
           } else {
             if(uiState.soundEnabled) SoundFX.playDamage();
             player.invincibleTimer = CONSTANTS.INVINCIBILITY_DURATION;
+            engine.screenShake = 0.2;
             setUiState(prev => {
               const h = prev.health - 1;
               if (h <= 0) setScreen('gameOver');
@@ -616,6 +655,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
       }
     }
 
+    // Boss updates
     if (level.boss && level.boss.hp > 0 && player.x > CONSTANTS.BOSS_AREA_START - 200) {
       const boss = level.boss;
       boss.timer -= dt;
@@ -644,12 +684,13 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
             boss.hp -= 1;
             boss.flashTimer = 0.5;
             player.vy = CONSTANTS.PLAYER_JUMP_VELOCITY;
+            engine.screenShake = 0.3;
             if(uiState.soundEnabled) SoundFX.playBossHit();
             
             if (boss.hp <= 0) {
                if(uiState.soundEnabled) SoundFX.playBossDefeat();
                setUiState(prev => ({ ...prev, score: prev.score + 1000 }));
-               for(let i=0;i<30;i++) particles.push({x: boss.x, y: boss.y, vx: (Math.random()-0.5)*200, vy: (Math.random()-0.5)*200, life: 1.0, color: '#f59e0b'});
+               for(let i=0;i<40;i++) particles.push({x: boss.x, y: boss.y, vx: (Math.random()-0.5)*250, vy: (Math.random()-0.5)*250, life: 1.0, color: '#f59e0b'});
                level.goal.unlocked = true;
             } else {
                boss.state = 'patrol';
@@ -659,6 +700,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
           } else {
             if(uiState.soundEnabled) SoundFX.playDamage();
             player.invincibleTimer = CONSTANTS.INVINCIBILITY_DURATION;
+            engine.screenShake = 0.3;
             setUiState(prev => {
               const h = prev.health - 1;
               if (h <= 0) setScreen('gameOver');
@@ -671,6 +713,9 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
 
     for (const c of level.collectibles) {
       if (c.collected) continue;
+      // Skip updates if far off-screen
+      if (c.x < engine.cameraX - 100 || c.x > engine.cameraX + CONSTANTS.VIRTUAL_WIDTH + 100) continue;
+
       if (Math.abs(player.x - c.x) < 20 && Math.abs((player.y - 15) - c.y) < 25) {
         c.collected = true;
         setUiState(prev => {
@@ -727,11 +772,11 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
     
     if (screen !== 'playing') return;
 
-    const { player, level, particles, cameraX } = engineRef.current;
+    const { player, level, particles, cameraX, screenShake } = engineRef.current;
     
+    // Background gradient
     ctx.fillStyle = level.theme.colorBgTop;
     ctx.fillRect(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
-    
     const gradient = ctx.createLinearGradient(0, 0, 0, VIRTUAL_HEIGHT);
     gradient.addColorStop(0, level.theme.colorBgTop);
     gradient.addColorStop(1, level.theme.colorBgBot);
@@ -739,9 +784,33 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
     ctx.fillRect(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
 
     ctx.save();
-    ctx.translate(-cameraX, 0);
+    
+    // Apply Camera & Screen Shake
+    let camOffsetX = -cameraX;
+    let camOffsetY = 0;
+    if (screenShake > 0) {
+      camOffsetX += (Math.random() - 0.5) * 15;
+      camOffsetY += (Math.random() - 0.5) * 15;
+    }
+    ctx.translate(camOffsetX, camOffsetY);
 
+    // Parallax Background Layer
+    ctx.save();
+    ctx.translate(cameraX * 0.8, 0); 
+    ctx.fillStyle = level.theme.platColor;
+    ctx.globalAlpha = 0.4;
+    for(let i=0; i<CONSTANTS.LEVEL_LENGTH; i+= 600) {
+      ctx.beginPath();
+      ctx.moveTo(i, CONSTANTS.GROUND_Y);
+      ctx.lineTo(i + 300, CONSTANTS.GROUND_Y - 200 - (Math.sin(i)*50));
+      ctx.lineTo(i + 600, CONSTANTS.GROUND_Y);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Foreground Render Loop (Culling off-screen objects)
     for (const p of level.platforms) {
+      if (p.x + p.w < cameraX - 100 || p.x > cameraX + VIRTUAL_WIDTH + 100) continue;
       ctx.fillStyle = level.theme.platColor;
       ctx.fillRect(p.x, p.y, p.w, p.h);
       ctx.fillStyle = level.theme.platTop;
@@ -750,6 +819,8 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
 
     for (const c of level.collectibles) {
       if (c.collected) continue;
+      if (c.x < cameraX - 50 || c.x > cameraX + VIRTUAL_WIDTH + 50) continue;
+      
       const bob = Math.sin(Date.now() / 200 + c.x) * 4;
       if (c.type === 'star') {
         ctx.fillStyle = '#fbbf24';
@@ -770,7 +841,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
       }
     }
 
-    if (level.goal) {
+    if (level.goal && (level.goal.x > cameraX - 100 && level.goal.x < cameraX + VIRTUAL_WIDTH + 100)) {
       ctx.fillStyle = level.goal.unlocked ? '#2dd4bf' : '#64748b';
       ctx.beginPath();
       ctx.ellipse(level.goal.x, level.goal.y, level.goal.w/2, level.goal.h/2, 0, 0, Math.PI*2);
@@ -785,16 +856,19 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
     }
 
     for (const enemy of level.enemies) {
-      if (!enemy.dead) drawEnemy(ctx, enemy);
+      if (!enemy.dead && enemy.x > cameraX - 100 && enemy.x < cameraX + VIRTUAL_WIDTH + 100) {
+        drawEnemy(ctx, enemy);
+      }
     }
 
-    if (level.boss && level.boss.hp > 0) {
+    if (level.boss && level.boss.hp > 0 && level.boss.x > cameraX - 200 && level.boss.x < cameraX + VIRTUAL_WIDTH + 200) {
       drawBoss(ctx, level.boss);
     }
 
     drawSnowy(ctx, player);
 
     for (const p of particles) {
+      if (p.x < cameraX - 50 || p.x > cameraX + VIRTUAL_WIDTH + 50) continue;
       ctx.fillStyle = p.color;
       ctx.globalAlpha = p.life;
       ctx.beginPath();
@@ -840,7 +914,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
     <div className="absolute inset-0 bg-gradient-to-b from-indigo-900 to-purple-900 text-white flex flex-col items-center justify-center overflow-hidden font-['Comic_Neue']">
       
       <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10">
-        <button onClick={onBackToBook} className="flex items-center gap-2 hover:text-pink-300 transition-colors">
+        <button onClick={onBackToBook} className="flex items-center gap-2 hover:text-pink-300 transition-colors font-semibold">
           <ArrowLeft size={24} /> {t.back}
         </button>
         <div className="flex gap-4 items-center">
@@ -881,7 +955,7 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
                 onClick={() => initGame(i)}
                 className={`relative w-20 h-20 rounded-full flex items-center justify-center transition-all ${
                   isUnlocked ? 'bg-gradient-to-br from-pink-400 to-teal-400 hover:scale-110 shadow-lg shadow-teal-500/50 cursor-pointer' 
-                           : 'bg-gray-700 cursor-not-allowed opacity-70'
+                             : 'bg-gray-700 cursor-not-allowed opacity-70'
                 }`}
                 style={{ border: `4px solid ${theme.platTop}` }}
               >
@@ -936,8 +1010,8 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
       </div>
       
       {uiState.isPaused && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center pointer-events-auto">
-          <div className="bg-white text-slate-800 p-8 rounded-3xl flex flex-col gap-4 text-center max-w-sm w-full">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center pointer-events-auto z-30">
+          <div className="bg-white text-slate-800 p-8 rounded-3xl flex flex-col gap-4 text-center max-w-sm w-full shadow-2xl">
             <h2 className="text-3xl font-bold font-['Updock']">{t.pause}</h2>
             <button onClick={() => setUiState(p => ({ ...p, isPaused: false }))} className="py-3 px-6 bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-600">
               {t.resume}
@@ -1058,6 +1132,6 @@ export default function SnowyGame({ onBackToBook, language = 'en', onLanguageCha
 
 SnowyGame.propTypes = {
   onBackToBook: PropTypes.func.isRequired,
-  language: PropTypes.oneOf(['en', 'de']),
+  language: PropTypes.string,
   onLanguageChange: PropTypes.func.isRequired
 };
