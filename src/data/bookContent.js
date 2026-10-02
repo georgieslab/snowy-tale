@@ -140,8 +140,8 @@ export const bookContent = {
   };
   
 export const amazonLinks = {
-  en: 'https://www.amazon.com/s?k=Snowy+the+Tiny+Dinosaur',
-  de: 'https://www.amazon.de/s?k=Der+kleine+Dinosaurier+mit+dem+leuchtenden+Herzen'
+  en: 'https://www.amazon.de/dp/B0HLK1PFFC',
+  de: 'https://www.amazon.de/dp/B0HLK1PFFC'
 };
 
 export default bookContent;

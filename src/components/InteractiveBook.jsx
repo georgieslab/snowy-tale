@@ -486,7 +486,7 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
           </header>
 
           {/* Main Book Stage */}
-          <main className="book-container absolute inset-0 flex items-center justify-center p-2 sm:p-6 md:p-8 pt-14 sm:pt-16 pb-14 sm:pb-16">
+          <main className="book-container absolute inset-0 flex items-center justify-center p-2 sm:p-6 md:p-8 pt-16 sm:pt-20 pb-20 sm:pb-24">
             
             {/* ============================================================== */}
             {/* 1. MOBILE PORTRAIT / SMALL SCREEN VIEW (< 768px)               */}
@@ -657,7 +657,7 @@ const InteractiveBook = ({ onOpenGame, language = 'en', onLanguageChange }) => {
                     <div className="flex flex-col items-center gap-2.5 shrink-0">
                       <button
                         onClick={handleBookOpen}
-                        className="group relative rounded-full px-12 py-3.5 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow"
+                        className="group relative rounded-full px-12 py-4 text-2xl font-bold text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 bg-gradient-to-r from-teal-400 via-pink-400 to-amber-300 animate-gradient-slow"
                       >
                         <span>{currentLanguage === 'en' ? 'Begin the Story' : 'Geschichte beginnen'}</span>
                       </button>
